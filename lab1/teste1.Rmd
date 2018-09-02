@@ -1,0 +1,109 @@
+---
+title: "Análise de Gastos dos Deputados"
+author: "Júlio Guedes"
+date: "August 29, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+### Importando as bibliotecas
+
+```{r, echo=TRUE}
+library(readr)
+library(dplyr)
+library(plyr)
+library(ggplot2)
+library(ggrepel)
+library(gridExtra)
+```
+
+### Importando e padronizando os dados
+
+```{r, echo = TRUE}
+dadosCEAP <- read_csv("dadosCEAP.csv")
+dadosCEAP$valorGlosa <- as.numeric(sub(",", ".", dadosCEAP$valorGlosa, fixed = TRUE))
+limiteMensalCEAP <- read_csv("limiteMensalCEAP.csv")
+```
+
+### Questão 1: Quais são os deputados que gastaram mais dinheiro da CEAP? Quais são os mais econômicos?
+
+Para responder a primeira pergunta, podemos mostrar um gráfico de barras com todos os gastos de deputados e observar o máximo e o mínimo:
+
+```{r, echo = TRUE}
+gastoTotal <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAP, sum)
+ggplot(gastoTotal, aes(
+    x = gastoTotal$nomeParlamentar,
+    y = gastoTotal$valorLíquido
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
+```
+
+Entretanto, é difícil identificar o maior e menor em meio a tantas entradas, e ainda mais quando estão desordenadas. O próximo passo, então, é criar um gráfico ordenado para mostrar um subgrupo contendo n deputados, podendo ser os que mais gastaram ou que menos gastaram. Para isso, ordenar os dados antes de plotar:
+
+```{r, echo = TRUE}
+gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido)])
+top10 <- head(arrange(gastoTotal, desc(valorLíquido)), n = 10)
+ggplot(top10, aes(
+    x = top10$nomeParlamentar,
+    y = top10$valorLíquido
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
+```
+
+Por termos encontrado o top10 de deputados que mais gastam, podemos encontrar também o top10 deputados que menos gastam:
+
+```{r, echo = TRUE}
+gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido, decreasing = TRUE)])
+bot10 <- tail(arrange(gastoTotal, desc(valorLíquido)), n = 10)
+ggplot(bot10, aes(
+    x = bot10$nomeParlamentar,
+    y = bot10$valorLíquido
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
+```
+
+Inicialmente, a visualização assusta, "Como um gráfico de gastos pode ter valores negativos?". Entretanto, já era previsto nos dados que, nos casos de passagem aérea, o valor poderia ser negativo, representando uma compensação ao Parlamentar, isto é, um bilhete de compensação.
+
+### Questão 2: Quais os estados cujos deputados gastam mais no exterior? Quais os estados cujos deputados gastam menos no exterior?
+
+Para responder essa questão, faremos basicamente o mesmo procedimento da questão anterior. Nos nosso dados, temos uma coluna identificando o tipo do Documento, que tem valor 2 quando foi de um gasto no exterior. Assim, é necessário filtrar as entradas que possuem esse valor na coluna, e repetir o procedimento da questão anterior, e para adiantar, já podemos plotar ordenado.
+
+```{r, echo = TRUE}
+dadosCEAPExterior <- subset(dadosCEAP, tipoDocumento == 2)
+gastoExterior <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAPExterior, sum)
+gastoExterior$nomeParlamentar <- factor(gastoExterior$nomeParlamentar, levels=gastoExterior$nomeParlamentar[order(gastoExterior$valorLíquido)])
+ggplot(gastoExterior, aes(
+    x = gastoExterior$nomeParlamentar,
+    y = gastoExterior$valorLíquido
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido Gasto no Exterior")
+```
+
+Nesse gráfico, já podemos observar mais de perto quem são os políticos que gastaram no exterior, podendo também ver que Odorico Monteiro quem mais gastou e Dr Sinval Malheiros quem menos gastou. Entretanto, ainda é justo analisarmos o top10 que mais e menos gastou no exterior:
+
+```{r, echo = FALSE}
+top10Exterior <- head(arrange(gastoExterior, desc(valorLíquido)), n = 10)
+gastoExterior$nomeParlamentar <- factor(gastoExterior$nomeParlamentar, levels=gastoExterior$nomeParlamentar[order(gastoExterior$valorLíquido, decreasing = TRUE)])
+bot10Exterior <- tail(arrange(gastoExterior, desc(valorLíquido)), n = 10)
+ptopExterior <- ggplot(top10Exterior, aes(
+    x = top10Exterior$nomeParlamentar,
+    y = top10Exterior$valorLíquido
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido Gasto no Exterior")
+pbotExterior <- ggplot(bot10Exterior, aes(
+    x = bot10Exterior$nomeParlamentar,
+    y = bot10Exterior$valorLíquido
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido Gasto no Exterior")
+grid.arrange(ptopExterior, pbotExterior, ncol = 2)
+```
+
+### Questão 3
+
+```{r, echo = TRUE}
+parlamentaresPB <- subset(dadosCEAP, sgUF == "PB")
+ocorrenciasPB <- table(unlist(parlamentaresPB$nomeParlamentar))
+ocorrenciasPB <- as.data.frame(ocorrenciasPB)
+colnames(ocorrenciasPB)[1] <- "nomeParlamentar"
+ocorrenciasPBtotal <- aggregate(valorLíquido ~ nomeParlamentar, parlamentaresPB, sum)
+parlPB <- merge(ocorrenciasPB, ocorrenciasPBtotal, by="nomeParlamentar")
+parlPB$nomeParlamentar <- factor(parlPB$nomeParlamentar, parlPB$nomeParlamentar[order(parlPB$valorLíquido)])
+ggplot(parlPB, aes(x = parlPB$Freq, y = parlPB$valorLíquido)) + theme_bw() + labs(x = "Frequencia de gastos", y = "Quantia gasta") + geom_point(size = 2) + geom_label_repel(aes(label = parlPB$nomeParlamentar), label.size = NA) + geom_smooth(method = lm)
+```
