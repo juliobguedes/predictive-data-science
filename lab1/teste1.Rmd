@@ -32,7 +32,7 @@ limiteMensalCEAP <- read_csv("limiteMensalCEAP.csv")
 
 Para responder a primeira pergunta, podemos mostrar um gráfico de barras com todos os gastos de deputados e observar o máximo e o mínimo:
 
-```{r, echo = TRUE}
+```{r, echo = FALSE}
 gastoTotal <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAP, sum)
 ggplot(gastoTotal, aes(
     x = gastoTotal$nomeParlamentar,
@@ -42,7 +42,7 @@ ggplot(gastoTotal, aes(
 
 Entretanto, é difícil identificar o maior e menor em meio a tantas entradas, e ainda mais quando estão desordenadas. O próximo passo, então, é criar um gráfico ordenado para mostrar um subgrupo contendo n deputados, podendo ser os que mais gastaram ou que menos gastaram. Para isso, ordenar os dados antes de plotar:
 
-```{r, echo = TRUE}
+```{r, echo = FALSE}
 gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido)])
 top10 <- head(arrange(gastoTotal, desc(valorLíquido)), n = 10)
 ggplot(top10, aes(
@@ -53,7 +53,7 @@ ggplot(top10, aes(
 
 Por termos encontrado o top10 de deputados que mais gastam, podemos encontrar também o top10 deputados que menos gastam:
 
-```{r, echo = TRUE}
+```{r, echo = FALSE}
 gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido, decreasing = TRUE)])
 bot10 <- tail(arrange(gastoTotal, desc(valorLíquido)), n = 10)
 ggplot(bot10, aes(
@@ -68,7 +68,7 @@ Inicialmente, a visualização assusta, "Como um gráfico de gastos pode ter val
 
 Para responder essa questão, faremos basicamente o mesmo procedimento da questão anterior. Nos nosso dados, temos uma coluna identificando o tipo do Documento, que tem valor 2 quando foi de um gasto no exterior. Assim, é necessário filtrar as entradas que possuem esse valor na coluna, e repetir o procedimento da questão anterior, e para adiantar, já podemos plotar ordenado.
 
-```{r, echo = TRUE}
+```{r, echo = FALSE}
 dadosCEAPExterior <- subset(dadosCEAP, tipoDocumento == 2)
 gastoExterior <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAPExterior, sum)
 gastoExterior$nomeParlamentar <- factor(gastoExterior$nomeParlamentar, levels=gastoExterior$nomeParlamentar[order(gastoExterior$valorLíquido)])
@@ -95,9 +95,11 @@ pbotExterior <- ggplot(bot10Exterior, aes(
 grid.arrange(ptopExterior, pbotExterior, ncol = 2)
 ```
 
-### Questão 3
+### Questão 3: Quais os partidos cujos parlamentares mais usam CEAP no estado da Paraíba? Quais são os que menos usam? Mesmas perguntas considerando valores em R$.
 
-```{r, echo = TRUE}
+Para esta pergunta, poderíamos repetir os processos anteriores e plotar dois gráficos de barras. Entretanto, plotando um gráfico de pontos, sendo o eixo x a frequência de gastos, e o eixo y o valor gasto, podemos verificar a pergunta em sua totalidade com apenas um gráfico, além de analisar a correlação de ambas as variáveis:
+
+```{r, echo = FALSE}
 parlamentaresPB <- subset(dadosCEAP, sgUF == "PB")
 ocorrenciasPB <- table(unlist(parlamentaresPB$nomeParlamentar))
 ocorrenciasPB <- as.data.frame(ocorrenciasPB)
@@ -106,4 +108,34 @@ ocorrenciasPBtotal <- aggregate(valorLíquido ~ nomeParlamentar, parlamentaresPB
 parlPB <- merge(ocorrenciasPB, ocorrenciasPBtotal, by="nomeParlamentar")
 parlPB$nomeParlamentar <- factor(parlPB$nomeParlamentar, parlPB$nomeParlamentar[order(parlPB$valorLíquido)])
 ggplot(parlPB, aes(x = parlPB$Freq, y = parlPB$valorLíquido)) + theme_bw() + labs(x = "Frequencia de gastos", y = "Quantia gasta") + geom_point(size = 2) + geom_label_repel(aes(label = parlPB$nomeParlamentar), label.size = NA) + geom_smooth(method = lm)
+```
+
+Ao ver o gráfico, podemos supor que existe correlação entre ambas as variáveis, com valor de `r cor(parlPB$Freq, parlPB$valorLíquido)`.
+
+### Questão 4: Quais os deputados que mais ultrapassam o limite de CEAP do seu estado?
+
+Para responder essa pergunta, precisamos agrupar os gastos mensalmente. Em seguida, para cada estado, podemos ver os deputados que mais ultrapassaram a cota mensal, de estado para estado:
+
+```{r, echo = FALSE}
+ceapMes <- dadosCEAP %>% mutate(dataEmissao = format(as.POSIXct(dataEmissao), "%Y-%m"))
+parlMes <- aggregate(valorLíquido ~ nomeParlamentar + dataEmissao + sgUF, ceapMes, sum)
+parlMes <- aggregate(valorLíquido ~ dataEmissao + nomeParlamentar + sgUF, parlMes, sum)
+parlMes <- parlMes[c("nomeParlamentar", "sgUF", "dataEmissao", "valorLíquido")]
+colnames(limiteMensalCEAP)[1] <- "sgUF"
+parlMes <- merge(parlMes, limiteMensalCEAP, by="sgUF")
+ultrapassaram <- subset(parlMes, valorLíquido > limite_mensal)
+plotUFs <- list()
+UFs <- unique(ultrapassaram$sgUF)
+for (i in 1:length(UFs)) {
+  temp <- subset(ultrapassaram, sgUF == UFs[i])
+  tempFreq <- as.data.frame(table(unlist(temp$nomeParlamentar)))
+  colnames(tempFreq)[1] <- "nomeParlamentar"
+  tempPlot <- ggplot(tempFreq, aes_string(x = tempFreq$nomeParlamentar, y = tempFreq$Freq))
+  tempPlot <- tempPlot + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  tempPlot <- tempPlot + labs(x = "Nome do Parlamentar")
+  tempPlot <- tempPlot + geom_bar(stat = "identity") + ggtitle(temp$sgUF)
+  tempPlot <- ggplotGrob(tempPlot)
+  plotUFs <- append(plotUFs, list(tempPlot))
+}
+grid.arrange(grobs=plotUFs, ncol = 3)
 ```
