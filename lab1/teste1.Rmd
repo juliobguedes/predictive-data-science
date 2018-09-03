@@ -18,6 +18,7 @@ library(plyr)
 library(ggplot2)
 library(ggrepel)
 library(gridExtra)
+library(plotly)
 ```
 
 ### Importando e padronizando os dados
@@ -33,6 +34,7 @@ limiteMensalCEAP <- read_csv("limiteMensalCEAP.csv")
 Para responder a primeira pergunta, podemos mostrar um gráfico de barras com todos os gastos de deputados e observar o máximo e o mínimo:
 
 ```{r, echo = FALSE}
+dadosCEAP <- subset(dadosCEAP, valorLíquido >= 0)
 gastoTotal <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAP, sum)
 ggplot(gastoTotal, aes(
     x = gastoTotal$nomeParlamentar,
@@ -57,7 +59,7 @@ Por termos encontrado o top10 de deputados que mais gastam, podemos encontrar ta
 gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido, decreasing = TRUE)])
 bot10 <- tail(arrange(gastoTotal, desc(valorLíquido)), n = 10)
 ggplot(bot10, aes(
-    x = bot10$nomeParlamentar,
+    x = reorder(bot10$nomeParlamentar, bot10$valorLíquido),
     y = bot10$valorLíquido
 )) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
 ```
@@ -70,28 +72,26 @@ Para responder essa questão, faremos basicamente o mesmo procedimento da quest�
 
 ```{r, echo = FALSE}
 dadosCEAPExterior <- subset(dadosCEAP, tipoDocumento == 2)
-gastoExterior <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAPExterior, sum)
-gastoExterior$nomeParlamentar <- factor(gastoExterior$nomeParlamentar, levels=gastoExterior$nomeParlamentar[order(gastoExterior$valorLíquido)])
+gastoExterior <- aggregate(valorLíquido ~ sgUF, dadosCEAPExterior, sum)
 ggplot(gastoExterior, aes(
-    x = gastoExterior$nomeParlamentar,
+    x = reorder(gastoExterior$sgUF, gastoExterior$valorLíquido),
     y = gastoExterior$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido Gasto no Exterior")
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Sigla do Estado", y = "Valor Líquido Gasto no Exterior")
 ```
 
 Nesse gráfico, já podemos observar mais de perto quem são os políticos que gastaram no exterior, podendo também ver que Odorico Monteiro quem mais gastou e Dr Sinval Malheiros quem menos gastou. Entretanto, ainda é justo analisarmos o top10 que mais e menos gastou no exterior:
 
 ```{r, echo = FALSE}
 top10Exterior <- head(arrange(gastoExterior, desc(valorLíquido)), n = 10)
-gastoExterior$nomeParlamentar <- factor(gastoExterior$nomeParlamentar, levels=gastoExterior$nomeParlamentar[order(gastoExterior$valorLíquido, decreasing = TRUE)])
 bot10Exterior <- tail(arrange(gastoExterior, desc(valorLíquido)), n = 10)
 ptopExterior <- ggplot(top10Exterior, aes(
-    x = top10Exterior$nomeParlamentar,
+    x = reorder(top10Exterior$sgUF, top10$valorLíquido),
     y = top10Exterior$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido Gasto no Exterior")
+)) + geom_bar(stat = "identity") + labs(x = "Sigla do Estado", y = "Valor Líquido Gasto no Exterior")
 pbotExterior <- ggplot(bot10Exterior, aes(
-    x = bot10Exterior$nomeParlamentar,
+    x = reorder(bot10Exterior$sgUF, bot10$valorLíquido),
     y = bot10Exterior$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido Gasto no Exterior")
+)) + geom_bar(stat = "identity") + labs(x = "Sigla do Estado", y = "Valor Líquido Gasto no Exterior")
 grid.arrange(ptopExterior, pbotExterior, ncol = 2)
 ```
 
@@ -101,16 +101,16 @@ Para esta pergunta, poderíamos repetir os processos anteriores e plotar dois gr
 
 ```{r, echo = FALSE}
 parlamentaresPB <- subset(dadosCEAP, sgUF == "PB")
-ocorrenciasPB <- table(unlist(parlamentaresPB$nomeParlamentar))
+ocorrenciasPB <- table(unlist(parlamentaresPB$sgPartido))
 ocorrenciasPB <- as.data.frame(ocorrenciasPB)
-colnames(ocorrenciasPB)[1] <- "nomeParlamentar"
-ocorrenciasPBtotal <- aggregate(valorLíquido ~ nomeParlamentar, parlamentaresPB, sum)
-parlPB <- merge(ocorrenciasPB, ocorrenciasPBtotal, by="nomeParlamentar")
-parlPB$nomeParlamentar <- factor(parlPB$nomeParlamentar, parlPB$nomeParlamentar[order(parlPB$valorLíquido)])
-ggplot(parlPB, aes(x = parlPB$Freq, y = parlPB$valorLíquido)) + theme_bw() + labs(x = "Frequencia de gastos", y = "Quantia gasta") + geom_point(size = 2) + geom_label_repel(aes(label = parlPB$nomeParlamentar), label.size = NA) + geom_smooth(method = lm)
+colnames(ocorrenciasPB)[1] <- "sgPartido"
+ocorrenciasPBtotal <- aggregate(valorLíquido ~ sgPartido, parlamentaresPB, sum)
+parlPB <- merge(ocorrenciasPB, ocorrenciasPBtotal, by="sgPartido")
+parlPB$sgPartido <- factor(parlPB$sgPartido, parlPB$sgPartido[order(parlPB$valorLíquido)])
+ggplot(parlPB, aes(x = parlPB$Freq, y = parlPB$valorLíquido)) + theme_bw() + labs(x = "Frequencia de gastos", y = "Quantia gasta") + geom_point(size = 2) + geom_label_repel(aes(label = parlPB$sgPartido), label.size = NA) + geom_smooth(method = lm)
 ```
 
-Ao ver o gráfico, podemos supor que existe correlação entre ambas as variáveis, com valor de `r cor(parlPB$Freq, parlPB$valorLíquido)`.
+Ao ver o gráfico, podemos supor que existe correlação entre ambas as variáveis, com valor de `r cor(parlPB$Freq, parlPB$valorLíquido)`.Quais os deputados que mais ultrapassam o limite de CEAP do seu estado?
 
 ### Questão 4: Quais os deputados que mais ultrapassam o limite de CEAP do seu estado?
 
@@ -124,18 +124,11 @@ parlMes <- parlMes[c("nomeParlamentar", "sgUF", "dataEmissao", "valorLíquido")]
 colnames(limiteMensalCEAP)[1] <- "sgUF"
 parlMes <- merge(parlMes, limiteMensalCEAP, by="sgUF")
 ultrapassaram <- subset(parlMes, valorLíquido > limite_mensal)
-plotUFs <- list()
-UFs <- unique(ultrapassaram$sgUF)
-for (i in 1:length(UFs)) {
-  temp <- subset(ultrapassaram, sgUF == UFs[i])
-  tempFreq <- as.data.frame(table(unlist(temp$nomeParlamentar)))
-  colnames(tempFreq)[1] <- "nomeParlamentar"
-  tempPlot <- ggplot(tempFreq, aes_string(x = tempFreq$nomeParlamentar, y = tempFreq$Freq))
-  tempPlot <- tempPlot + theme(axis.text.x = element_text(angle = 30, hjust = 1))
-  tempPlot <- tempPlot + labs(x = "Nome do Parlamentar")
-  tempPlot <- tempPlot + geom_bar(stat = "identity") + ggtitle(temp$sgUF)
-  tempPlot <- ggplotGrob(tempPlot)
-  plotUFs <- append(plotUFs, list(tempPlot))
-}
-grid.arrange(grobs=plotUFs, ncol = 3)
+ultrapassaramFreq <- as.data.frame(table(unlist(ultrapassaram$nomeParlamentar)))
+colnames(ultrapassaramFreq)[1] <- "nomeParlamentar"
+ultrapassaramFreq <- merge(ultrapassaramFreq, ultrapassaram, by="nomeParlamentar")
+p <- ggplot(ultrapassaramFreq, aes(x = reorder(ultrapassaramFreq$nomeParlamentar, ultrapassaramFreq$Freq), y = ultrapassaramFreq$Freq))
+p <- p + geom_bar(stat = "identity")
+p <- p + facet_wrap(~sgUF)
+p
 ```
