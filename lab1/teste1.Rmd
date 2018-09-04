@@ -36,50 +36,42 @@ Para responder a primeira pergunta, podemos mostrar um gráfico de barras com to
 ```{r, echo = FALSE}
 dadosCEAP <- subset(dadosCEAP, valorLíquido >= 0)
 gastoTotal <- aggregate(valorLíquido ~ nomeParlamentar, dadosCEAP, sum)
-ggplot(gastoTotal, aes(
+ggplotly(ggplot(gastoTotal, aes(
     x = gastoTotal$nomeParlamentar,
     y = gastoTotal$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
+)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido"))
 ```
 
-Entretanto, é difícil identificar o maior e menor em meio a tantas entradas, e ainda mais quando estão desordenadas. O próximo passo, então, é criar um gráfico ordenado para mostrar um subgrupo contendo n deputados, podendo ser os que mais gastaram ou que menos gastaram. Para isso, ordenar os dados antes de plotar:
+Entretanto, é difícil identificar o maior e menor em meio a tantas entradas, e ainda mais quando estão desordenadas. Podemos então criar um gráfico ordenado para mostrar dois subgrupos contendo 10 deputados cada: os que mais gastaram, e os que menos gastaram:
 
 ```{r, echo = FALSE}
-gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido)])
 top10 <- head(arrange(gastoTotal, desc(valorLíquido)), n = 10)
-ggplot(top10, aes(
-    x = top10$nomeParlamentar,
+plottop <- ggplot(top10, aes(
+    x = reorder(top10$nomeParlamentar, top10$valorLíquido),
     y = top10$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
-```
-
-Por termos encontrado o top10 de deputados que mais gastam, podemos encontrar também o top10 deputados que menos gastam:
-
-```{r, echo = FALSE}
-gastoTotal$nomeParlamentar <- factor(gastoTotal$nomeParlamentar, levels = gastoTotal$nomeParlamentar[order(gastoTotal$valorLíquido, decreasing = TRUE)])
+)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
 bot10 <- tail(arrange(gastoTotal, desc(valorLíquido)), n = 10)
-ggplot(bot10, aes(
+plotbot <- ggplot(bot10, aes(
     x = reorder(bot10$nomeParlamentar, bot10$valorLíquido),
     y = bot10$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
+)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Nome do Parlamentar", y = "Valor Líquido")
+grid.arrange(plottop, plotbot, ncol = 2)
 ```
-
-Inicialmente, a visualização assusta, "Como um gráfico de gastos pode ter valores negativos?". Entretanto, já era previsto nos dados que, nos casos de passagem aérea, o valor poderia ser negativo, representando uma compensação ao Parlamentar, isto é, um bilhete de compensação.
 
 ### Questão 2: Quais os estados cujos deputados gastam mais no exterior? Quais os estados cujos deputados gastam menos no exterior?
 
-Para responder essa questão, faremos basicamente o mesmo procedimento da questão anterior. Nos nosso dados, temos uma coluna identificando o tipo do Documento, que tem valor 2 quando foi de um gasto no exterior. Assim, é necessário filtrar as entradas que possuem esse valor na coluna, e repetir o procedimento da questão anterior, e para adiantar, já podemos plotar ordenado.
+Para responder essa questão, faremos basicamente o mesmo procedimento da questão anterior, agrupando os valores por estado. Nos nosso dados, temos uma coluna identificando o tipo do Documento, que tem valor 2 quando foi de um gasto no exterior. Assim, é necessário filtrar as entradas que possuem esse valor na coluna, e repetir o procedimento da questão anterior:
 
 ```{r, echo = FALSE}
 dadosCEAPExterior <- subset(dadosCEAP, tipoDocumento == 2)
 gastoExterior <- aggregate(valorLíquido ~ sgUF, dadosCEAPExterior, sum)
-ggplot(gastoExterior, aes(
+ggplotly(ggplot(gastoExterior, aes(
     x = reorder(gastoExterior$sgUF, gastoExterior$valorLíquido),
     y = gastoExterior$valorLíquido
-)) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_bar(stat = "identity") + labs(x = "Sigla do Estado", y = "Valor Líquido Gasto no Exterior")
+)) + geom_bar(stat = "identity") + labs(x = "Sigla do Estado", y = "Valor Líquido Gasto no Exterior"))
 ```
 
-Nesse gráfico, já podemos observar mais de perto quem são os políticos que gastaram no exterior, podendo também ver que Odorico Monteiro quem mais gastou e Dr Sinval Malheiros quem menos gastou. Entretanto, ainda é justo analisarmos o top10 que mais e menos gastou no exterior:
+Nesse gráfico, já podemos observar mais de perto quais os estados que gastaram no exterior. Entretanto, ainda é justo analisarmos o Top10 estados que mais e menos gastou no exterior:
 
 ```{r, echo = FALSE}
 top10Exterior <- head(arrange(gastoExterior, desc(valorLíquido)), n = 10)
@@ -107,10 +99,10 @@ colnames(ocorrenciasPB)[1] <- "sgPartido"
 ocorrenciasPBtotal <- aggregate(valorLíquido ~ sgPartido, parlamentaresPB, sum)
 parlPB <- merge(ocorrenciasPB, ocorrenciasPBtotal, by="sgPartido")
 parlPB$sgPartido <- factor(parlPB$sgPartido, parlPB$sgPartido[order(parlPB$valorLíquido)])
-ggplot(parlPB, aes(x = parlPB$Freq, y = parlPB$valorLíquido)) + theme_bw() + labs(x = "Frequencia de gastos", y = "Quantia gasta") + geom_point(size = 2) + geom_label_repel(aes(label = parlPB$sgPartido), label.size = NA) + geom_smooth(method = lm)
+ggplot(parlPB, aes(x = parlPB$Freq, y = parlPB$valorLíquido)) + theme_bw() + labs(x = "Frequencia de gastos", y = "Quantia gasta") + geom_point(size = 2) + geom_label_repel(aes(label = parlPB$sgPartido), label.size = NA) + geom_smooth(method = lm) + scale_y_continuous(labels = scales::comma)
 ```
 
-Ao ver o gráfico, podemos supor que existe correlação entre ambas as variáveis, com valor de `r cor(parlPB$Freq, parlPB$valorLíquido)`.Quais os deputados que mais ultrapassam o limite de CEAP do seu estado?
+Ao ver o gráfico, podemos supor que existe correlação entre ambas as variáveis, com valor de `r cor(parlPB$Freq, parlPB$valorLíquido)`.
 
 ### Questão 4: Quais os deputados que mais ultrapassam o limite de CEAP do seu estado?
 
@@ -126,9 +118,66 @@ parlMes <- merge(parlMes, limiteMensalCEAP, by="sgUF")
 ultrapassaram <- subset(parlMes, valorLíquido > limite_mensal)
 ultrapassaramFreq <- as.data.frame(table(unlist(ultrapassaram$nomeParlamentar)))
 colnames(ultrapassaramFreq)[1] <- "nomeParlamentar"
-ultrapassaramFreq <- merge(ultrapassaramFreq, ultrapassaram, by="nomeParlamentar")
-p <- ggplot(ultrapassaramFreq, aes(x = reorder(ultrapassaramFreq$nomeParlamentar, ultrapassaramFreq$Freq), y = ultrapassaramFreq$Freq))
-p <- p + geom_bar(stat = "identity")
-p <- p + facet_wrap(~sgUF)
+top10 <- head(arrange(ultrapassaramFreq, desc(Freq)), n = 10)
+top10 <- merge(top10, ultrapassaram, by="nomeParlamentar")
+p <- ggplot(top10, aes(x = reorder(top10$nomeParlamentar, top10$Freq), y = top10$Freq, color=sgUF)) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p <- p + geom_bar(stat = "identity") + labs(x = "Nome do Deputado", y = "N de vezes que ultrapassou")
+p <- ggplotly(p)
 p
 ```
+
+No gráfico acima, é possível observar quais os 10 deputados que mais estouraram a cota da CEAP, e também os estados que fazem parte.
+
+### Questão 5: Quais estados cujos parlamentares gastam mais com passagens aéreas?
+
+```{r, echo = FALSE}
+passagens <- subset(dadosCEAP, tipoDespesa == "PASSAGENS AÉREAS")
+passagensFreq <- as.data.frame(table(unlist(passagens$sgUF)))
+colnames(passagensFreq)[1] <- "sgUF"
+passagens <- aggregate(valorLíquido ~ sgUF, passagens, sum)
+passagens <- merge(passagens, passagensFreq, by="sgUF")
+ggplotly(ggplot(passagens, aes(x = passagens$Freq, y = passagens$valorLíquido)) + theme_bw() + geom_point(size = 2) + labs(x = "Frequência de gastos", y = "Quantia gasta") + geom_label_repel(aes(label = passagens$sgUF), label.size = NA))
+```
+
+Pelo gráfico acima, podemos observar que São Paulo é o estado que mais frequentemente gastou com passagens aéreas e também o que gastou um maior valor com as mesmas.
+
+### Questão 6: Escolha três partidos e responda: Quais são os tipos de despesa mais utilizados no uso da CEAP pelos deputados desses partidos? Mesma pergunta considerando valores em R$
+
+Tendo sido escolhidos PT, PSDB e PMDB, temos:
+
+1. Para o PT:
+
+```{r, echo = FALSE}
+PT <- subset(dadosCEAP, sgPartido == "PT")
+PTfreq <- as.data.frame(table(unlist(PT$tipoDespesa)))
+colnames(PTfreq)[1] <- "tipoDespesa"
+PT <- aggregate(valorLíquido ~ tipoDespesa, PT, sum)
+PT <- merge(PT, PTfreq, by="tipoDespesa")
+ggplot(PT, aes(x=PT$Freq, y=PT$valorLíquido)) + labs(x = "Frequência", y = "Valor Líquido") + theme_bw() + geom_point(size = 2) + scale_x_continuous(labels = scales::comma) + scale_y_continuous(labels = scales::comma) + geom_label_repel(aes(label = PT$tipoDespesa), label.size = NA, size = 2)
+```
+
+2. Para o PSDB:
+
+```{r, echo = FALSE}
+PSDB <- subset(dadosCEAP, sgPartido == "PSDB")
+PSDBfreq <- as.data.frame(table(unlist(PSDB$tipoDespesa)))
+colnames(PSDBfreq)[1] <- "tipoDespesa"
+PSDB <- aggregate(valorLíquido ~ tipoDespesa, PSDB, sum)
+PSDB <- merge(PSDB, PSDBfreq, by="tipoDespesa")
+ggplot(PSDB, aes(x=PSDB$Freq, y=PSDB$valorLíquido)) + labs(x = "Frequência", y = "Valor Líquido") + theme_bw() + geom_point(size = 2) + scale_x_continuous(labels = scales::comma) + scale_y_continuous(labels = scales::comma) + geom_label_repel(aes(label = PSDB$tipoDespesa), label.size = NA, size = 2)
+```
+
+3. Para o PMDB:
+
+```{r, echo=FALSE}
+PMDB <- subset(dadosCEAP, sgPartido == "PMDB")
+PMDBfreq <- as.data.frame(table(unlist(PMDB$tipoDespesa)))
+colnames(PMDBfreq)[1] <- "tipoDespesa"
+PMDB <- aggregate(valorLíquido ~ tipoDespesa, PMDB, sum)
+PMDB <- merge(PMDB, PMDBfreq, by="tipoDespesa")
+ggplot(PMDB, aes(x=PMDB$Freq, y=PMDB$valorLíquido)) + labs(x = "Frequência", y = "Valor Líquido", color="") + theme_bw() + geom_point(size = 2) + scale_x_continuous(labels = scales::comma) + scale_y_continuous(labels = scales::comma) + geom_label_repel(aes(label = PMDB$tipoDespesa), label.size = NA, size = 2)
+```
+
+Pelos gráficos, podemos observar que os maiores gastos dos três partidos são: Em primeiro lugar, Emissão de Bilhetes Aéreos; em segundo lugar, Divulgação da atividade parlamentar; já em terceiro lugar, o PT e o PSDB ficam com a Manutenção de Escritório de Apoio à atividade Parlamentar, enquanto o PMDB gasta com Locação ou Fretamento de veículos automotores. 
+
+Já quanto à frequência, o PT mais frequentemente gasta com Emissão de Bilhetes aéreos, Combustíveis e lubrificantes e Serviços de Taxi, Pedágio e Estacionamento, enquanto o PSDB e o PMDB gastam com Emissão de Bilhetes aéreos, Combustíveis e lubrificantes e Telefonia.
