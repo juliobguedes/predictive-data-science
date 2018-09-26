@@ -1,0 +1,121 @@
+---
+title: "Eleições de 2006 e 2010: Uma análise da regressão"
+date: 2018-09-26
+author: Júlio Guedes
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 5
+---
+
+```{r knitr, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 10, fig.height = 10)
+```
+
+### Importando os pacotes
+
+```{r packages, echo=TRUE}
+library(readr)
+library(tidyverse)
+library(reshape2)
+```
+
+### Importando os dados
+
+Nesse lab, estaremos trabalhando com três conjuntos de dados: O conjunto das eleições de 2006, 2010, e um conjunto unindo ambas as eleições. Parte das análises serão feitas considerando os conjuntos separados, enquanto outras considerarão o conjunto unido. Nestes links você pode encontrar o conjunto de dados de [2006](https://canvas.instructure.com/courses/1402758/files/69433650/download?verifier=GvsTSXgoNVf12qbJerOSPAkHsOsdBUZD1Z1AD4lI), [2010](https://canvas.instructure.com/courses/1402758/files/69433651/download?verifier=ZETCucixF5Mkjhfp7CLuchjRXWlSwtw69ZhQ0jyk) e [2006 e 2010](https://canvas.instructure.com/courses/1402758/files/69406530/download?verifier=w88G2kvz56ZJbCSGXgm22zKizUdptatpCDigS9ei&wrap=1)
+
+```{r loading, echo=FALSE}
+eleicoes_2006 <- readr::read_csv(
+  here::here('eleicoes_2006.csv'), 
+  local=readr::locale("br"),
+  col_types = cols(
+    ano = col_integer(),
+    sequencial_candidato = col_character(),
+    quantidade_doacoes = col_integer(),
+    quantidade_doadores = col_integer(),
+    total_receita = col_double(),
+    media_receita = col_double(),
+    recursos_de_outros_candidatos.comites = col_double(),
+    recursos_de_pessoas_fisicas = col_double(),
+    recursos_de_pessoas_juridicas = col_double(),
+    recursos_proprios = col_double(),
+    `recursos_de_partido_politico` = col_double(),
+    quantidade_despesas = col_integer(),
+    quantidade_fornecedores = col_integer(),
+    total_despesa = col_double(),
+    media_despesa = col_double(),
+    votos = col_integer(),
+    .default = col_character()))
+
+eleicoes_2010 <- readr::read_csv(
+  here::here('eleicoes_2010.csv'), 
+  local=readr::locale("br"),
+  col_types = cols(
+    ano = col_integer(),
+    sequencial_candidato = col_character(),
+    quantidade_doacoes = col_integer(),
+    quantidade_doadores = col_integer(),
+    total_receita = col_double(),
+    media_receita = col_double(),
+    recursos_de_outros_candidatos.comites = col_double(),
+    recursos_de_pessoas_fisicas = col_double(),
+    recursos_de_pessoas_juridicas = col_double(),
+    recursos_proprios = col_double(),
+    `recursos_de_partido_politico` = col_double(),
+    quantidade_despesas = col_integer(),
+    quantidade_fornecedores = col_integer(),
+    total_despesa = col_double(),
+    media_despesa = col_double(),
+    votos = col_integer(),
+    .default = col_character()))
+
+eleicoes_geral <- readr::read_csv(
+  here::here('eleicoes_2006_e_2010.csv'), 
+  local=readr::locale("br"),
+  col_types = cols(
+    ano = col_integer(),
+    sequencial_candidato = col_character(),
+    quantidade_doacoes = col_integer(),
+    quantidade_doadores = col_integer(),
+    total_receita = col_double(),
+    media_receita = col_double(),
+    recursos_de_outros_candidatos.comites = col_double(),
+    recursos_de_pessoas_fisicas = col_double(),
+    recursos_de_pessoas_juridicas = col_double(),
+    recursos_proprios = col_double(),
+    `recursos_de_partido_politico` = col_double(),
+    quantidade_despesas = col_integer(),
+    quantidade_fornecedores = col_integer(),
+    total_despesa = col_double(),
+    media_despesa = col_double(),
+    votos = col_integer(),
+    .default = col_character()))
+```
+
+### Analisando as variáveis
+Inicialmente, analisaremos as variáveis importadas no conjunto das eleições de 2006, tentando identificar se há distribuição normal nessas variáveis, e caso não haja, aplicaremos a função log para aproximar da distribuição desejada. Outro objetivo é identificar fatores, fazendo em seguida as transformações necessárias.
+
+```{r q1_2006, echo=TRUE}
+d = melt(eleicoes_2006)
+ggplot(d, aes(x = value)) + facet_wrap(~variable, scales="free_x") + geom_histogram() + scale_x_continuous(labels = scales::comma)  + theme(axis.text.x = element_text(hjust = 1))
+```
+
+Logo de cara, observamos que a variável "ano" não apresenta valor relevante para a regressão já que, para todos os candidatos, ela possui o valor "2006".
+
+
+### Questão 1
+Um modelo de regressão múltipla com todas as variáveis é plausível para explicar a variação em y (número de votos) em 2006? Mesma pergunta para 2010. 
+
+### Questão 2
+Um modelo de regressão múltipla com todas as variáveis é plausível para explicar a variação em y (número de votos) em 2006? Mesma pergunta para 2010. 
+
+### Questão 3
+Todas as variáveis são úteis para os modelos de regressão? Há variáveis redudantes? Faça análises para 2006 e 2010 separadamente. 
+
+### Questão 4
+No caso de haver variáveis pouco explicativas e/ou redudantes, construa um novo modelo sem essas variáveis e o compare ao modelo com todas as variáveis (e.g. em termos de R2 e RSE). Faça isso para 2006 e 2010 separadamente.
+
+### Questão 5
+Construa agora uma regressão considerando os anos 2006 e 2010 em conjunto. Que diferenças/semelhanças você percebe em relação aos modelos individuais por ano? Veja a questão 2 para sugestões que você usar para comparação.
+
