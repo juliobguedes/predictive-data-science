@@ -9,3 +9,10 @@ In each folder exists a division between notebooks, outputs and datasets. Each s
 Inside the notebooks are my solutions to the questions raised and and the comment made by the professor to my solution will also be present in the README. Inside the folder also will be present a reviewed version of the notebook that fixes any problems or mistakes mentioned in the assessment.
 
 I also want to thanks to [Hadrizia Santos](https://github.com/hadrizia), that acted as Assistant Professor of the class, and helped a lot in the exercises and activities.
+
+## Menu
+
+* [Lab 1](lab1/README_EN.md)
+* [Lab 2](lab2/README_EN.md)
+* [Lab 3](lab3/README_EN.md)
+* [Lab 4](lab4/README_EN.md)

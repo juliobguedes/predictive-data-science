@@ -4,6 +4,9 @@
     * [Descrição](#descrição)
     * [Perguntas](#perguntas)
 * [Parte 2](#parte-2)
+    * [Descrição](#descrição-1)
+    * [Perguntas](#perguntas-1)
+    * [Ideias para melhorar os resultados](#ideias-para-melhorar-os-resultados)
 
 ## Parte 1
 ### Descrição

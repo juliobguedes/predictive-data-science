@@ -9,3 +9,10 @@ Em cada uma das pastas de atividades existe a divisão entre notebooks, outputs 
 Dentro dos notebooks estão as minhas soluções para as questões levantadas, e ainda dentro das subpastas, haverá o comentário dado pelo professor para a minha solução, bem como uma atualização revisada da atividade que corrige quaisquer problemas levantados na correção.
 
 Agradeço também à [Hadrizia Santos](https://github.com/hadrizia), que atuou como monitora da disciplina e auxiliou bastante no decorrer das atividades.
+
+## Menu
+
+* [Lab 1](lab1/README.md)
+* [Lab 2](lab2/README.md)
+* [Lab 3](lab3/README.md)
+* [Lab 4](lab4/README.md)
