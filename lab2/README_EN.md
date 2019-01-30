@@ -1,3 +1,3 @@
-# Exercise 1 - Predictive Data Science
+# Exercise 2 - Predictive Data Science
 
 **Under Development**
