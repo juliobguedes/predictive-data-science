@@ -24,9 +24,15 @@ library(plotly)
 ### Importando e padronizando os dados
 
 ```{r, echo = TRUE}
-dadosCEAP <- read_csv("dadosCEAP.csv")
+dadosCEAP1 <- read_csv("../datasets/dadosCEAP1.csv")
+dadosCEAP2 <- read_csv("../datasets/dadosCEAP2.csv")
+dadosCEAP <- data.frame(rbind(dadosCEAP1, dadosCEAP2))
+
+remove(dadosCEAP1)
+remove(dadosCEAP2)
+
 dadosCEAP$valorGlosa <- as.numeric(sub(",", ".", dadosCEAP$valorGlosa, fixed = TRUE))
-limiteMensalCEAP <- read_csv("limiteMensalCEAP.csv")
+limiteMensalCEAP <- read_csv("../datasets/limiteMensalCEAP.csv")
 ```
 
 ### Questão 1: Quais são os deputados que gastaram mais dinheiro da CEAP? Quais são os mais econômicos?
