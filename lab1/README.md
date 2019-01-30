@@ -1,5 +1,11 @@
 # Laboratório 1 - Ciência de Dados Preditiva
 
+* [Descrição](#descrição)
+* [Parte 1](#parte-1)
+    * [Nossas Perguntas](#nossas-perguntas)
+* [Parte 2](#parte-2)
+    * [Suas Perguntas](#suas-perguntas)
+
 ## Descrição
 
 Para os labs de análise exploratória você usará dados sobre a despesa de deputados federais da legisLatura atual com a atividade parlamentar. A CEAP (cota para o exercício da atividade parlamentar) é uma cota única mensal destinada a custear os gastos dos deputados exclusivamente vinculados ao exercício da atividade parlamentar. Exemplos de despesa desse tipo são: passagens aéreas, telefonia, serviços postais, manutenção de escritórios de apoio à atividade parlamentar, assinatura de publicações, fornecimento de alimentação ao parlamentar, hospedagem, outras despesas com locomoção, contemplando locação ou fretamento de aeronaves, veículos automotores e embarcações, serviços de táxi, pedágio e estacionamento e passagens terrestres. Mais informações [neste link](http://www2.camara.leg.br/transparencia/acesso-a-informacao/copy_of_perguntas-frequentes/cota-para-o-exercicio-da-atividade-parlamentar). Os dados foram coletados do site de transparência da Câmara, tratados, e podem ser baixados [neste link](https://canvas.instructure.com/courses/1402758/files/67618888/download?verifier=ibyou5PYo9aaFgRaefc0keYkHhkQ2EqIArdmI1bq&wrap=1). Uma breve descrição dos dados se encontra abaixo:
@@ -18,8 +24,7 @@ Para os labs de análise exploratória você usará dados sobre a despesa de dep
 * valorGlosa: O seu conteúdo representa o valor da glosa do documento fiscal que incidirá sobre o Valor do Documento, ou o valor da glosa do documento que deu causa à despesa.
 * valorLiquido: O seu conteúdo representa o valor líquido do documento fiscal ou do documento que deu causa à despesa e será calculado pela diferença entre o Valor do Documento e o Valor da Glosa. É este valor que será debitado da cota do deputado. Caso o débito seja do Tipo Telefonia e o valor seja igual a zero, significa que a despesa foi franqueada.
 
-## Tarefa
-
+## Parte 1
 ### Nossas perguntas:
 
 Nessa tarefa você deve usar as técnicas de análise descritiva e visualização que apresentamos na aula sobre análise exploratória para responder as seguintes perguntas:
@@ -31,6 +36,7 @@ Nessa tarefa você deve usar as técnicas de análise descritiva e visualizaçã
 5. Quais estados cujos parlamentares gastam mais com passagens aéreas? (7,5 pts)
 6. Escolha três partidos e responda: Quais são os tipos de despesa mais utilizados no uso da CEAP pelos deputados desses partidos? Mesma pergunta considerando valores em R$. (7,5 pts)
 
+## Parte 2
 ### Suas perguntas: 
 
 * Escolha e descreva 2 perguntas que na sua opinião são relevantes, não são óbvias e que você gostaria de ver respondidas a partir dos dados. Para cada uma escreva uma frase curta que documenta qual você acha que será a resposta.  
