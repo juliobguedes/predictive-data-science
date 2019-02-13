@@ -6,7 +6,7 @@ Este repositório contém todas as análises feitas como solução para os probl
 
 Em cada uma das pastas de atividades existe a divisão entre notebooks, outputs e datasets. Cada uma das subpastas deste diretório principal corresponde à uma atividade de laboratório, e em cada uma delas existe um arquivo README que explica a atividade em questão.
 
-Dentro dos notebooks estão as minhas soluções para as questões levantadas, e ainda dentro das subpastas, haverá o comentário dado pelo professor para a minha solução, bem como uma atualização revisada da atividade que corrige quaisquer problemas levantados na correção.
+Dentro dos notebooks estão as minhas soluções para as questões levantadas, e ainda dentro das subpastas, haverá o comentário dado pelo professor para a minha solução, uma atualização revisada da atividade que corrige problemas levantados na correção das mesmas, e links para a realização das atividades por amigos que também cursaram a disciplina.
 
 Agradeço também à [Hadrizia Santos](https://github.com/hadrizia), que atuou como monitora da disciplina e auxiliou bastante no decorrer das atividades.
 
